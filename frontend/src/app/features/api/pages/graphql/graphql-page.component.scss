@@ -1,0 +1,27 @@
+@import 'mixins';
+@import 'vars';
+
+@function hsl-str($color) {
+    @return unquote('#{hue($color)}, #{saturation($color)}, #{lightness($color)}');
+}
+
+:host ::ng-deep {
+    .graphiql-container {
+        @include absolute(0, 0, 0, 0);
+
+        --color-primary: #{hsl-str($color-theme-brand)};
+        --color-success: #{hsl-str($color-theme-success)};
+        --color-error: #{hsl-str($color-theme-error)};
+        --border-radius-4: #{$border-radius};
+        --border-radius-8: #{$border-radius};
+        --border-radius-12: #{$border-radius};
+
+        .graphiql-sessions {
+            border-radius: $border-radius;
+        }
+    }
+
+    .graphiql-logo {
+        display: none;
+    }
+}

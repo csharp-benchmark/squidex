@@ -1,0 +1,207 @@
+name: Dev
+concurrency: dev
+
+on:
+  push:
+    branches:
+      - master
+      - 'release/*'
+  pull_request:
+    branches:
+      - master
+      - 'release/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4.3.2
+
+      - name: Calculate Version
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          echo "BUILD_NUMBER=$(($BUILD_NUMBER + 6000))" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2.2.1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3.0.11
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: BUILD
+        uses: docker/build-push-action@v3.2.0
+        with:
+          push: false
+          load: true
+          build-args: "SQUIDEX__VERSION=5.0.0-dev-${{ env.BUILD_NUMBER }}"
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          tags: squidex-tmp
+
+      - name: Export Image
+        run: docker save squidex-tmp | gzip > squidex-tmp.tar.gz
+
+      - name: Save Image to Cache
+        uses: actions/cache@v3.0.11
+        with:
+          path: squidex-tmp.tar.gz
+          key: squidex-dev-image-${{ github.sha }}
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate Version
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          echo "BUILD_NUMBER=$(($BUILD_NUMBER + 6000))" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4.3.2
+
+      - name: Get Image From Cache
+        uses: actions/cache@v3.0.11
+        with:
+          path: squidex-tmp.tar.gz
+          key: squidex-dev-image-${{ github.sha }}
+
+      - name: Load Image
+        run: docker load < squidex-tmp.tar.gz
+
+      - name: Replace Image Name1
+        uses: mikefarah/yq@v4.28.2
+        with:
+          cmd: yq e '.services.squidex1.image = "squidex-tmp"' -i backend/tests/docker-compose.yml
+
+      - name: Replace Image Name2
+        uses: mikefarah/yq@v4.28.2
+        with:
+          cmd: yq e '.services.squidex2.image = "squidex-tmp"' -i backend/tests/docker-compose.yml
+
+      - name: Replace Image Name3
+        uses: mikefarah/yq@v4.28.2
+        with:
+          cmd: yq e '.services.squidex3.image = "squidex-tmp"' -i backend/tests/docker-compose.yml
+
+      - name: Start Test
+        run: docker-compose up -d
+        working-directory: backend/tests
+
+      - name: RUN TEST
+        uses: kohlerdominik/docker-run-action@v1.1.0
+        with:
+          image: squidex/build:7
+          environment: |
+            CONFIG__BACKUPURL=http://localhost:5000
+            CONFIG__WAIT=60
+            CONFIG__SERVER__URL=http://localhost:8080
+            WEBHOOKCATCHER__HOST__ENDPOINT=webhookcatcher
+          default_network: host
+          options: --name test1
+          volumes: ${{ github.workspace }}:/src
+          run: dotnet test /src/backend/tools/TestSuite/TestSuite.ApiTests/TestSuite.ApiTests.csproj --filter Category!=NotAutomated
+
+      - name: RUN TEST on path
+        uses: kohlerdominik/docker-run-action@v1.1.0
+        with:
+          image: squidex/build:7
+          environment: |
+            CONFIG__BACKUPURL=http://localhost:5000
+            CONFIG__WAIT=60
+            CONFIG__SERVER__URL=http://localhost:8081/squidex
+            WEBHOOKCATCHER__HOST__ENDPOINT=webhookcatcher
+          default_network: host
+          options: --name test2
+          volumes: ${{ github.workspace }}:/src
+          run: dotnet test /src/backend/tools/TestSuite/TestSuite.ApiTests/TestSuite.ApiTests.csproj --filter Category!=NotAutomated
+
+      - name: RUN TEST with dedicated collections
+        uses: kohlerdominik/docker-run-action@v1.1.0
+        with:
+          image: squidex/build:7
+          environment: |
+            CONFIG__BACKUPURL=http://localhost:5000
+            CONFIG__WAIT=60
+            CONFIG__SERVER__URL=http://localhost:8082
+            WEBHOOKCATCHER__HOST__ENDPOINT=webhookcatcher
+          default_network: host
+          options: --name test3
+          volumes: ${{ github.workspace }}:/src
+          run: dotnet test /src/backend/tools/TestSuite/TestSuite.ApiTests/TestSuite.ApiTests.csproj --filter Category!=NotAutomated
+       
+      - name: Dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2.2.1
+        with:
+         images: 'squidex-tmp,squidex/resizer,squidex/caddy-proxy-path'
+         tail: '100'
+
+      - name: Cleanup Test
+        if: always()
+        run: docker-compose down
+        working-directory: backend/tests
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate Version
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          echo "BUILD_NUMBER=$(($BUILD_NUMBER + 6000))" >> $GITHUB_ENV
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4.3.2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2.1.0
+        if: github.event_name != 'pull_request'
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Get Image From Cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache@v3.0.11
+        with:
+          path: squidex-tmp.tar.gz
+          key: squidex-dev-image-${{ github.sha }}
+
+      - name: Load Image
+        if: github.event_name != 'pull_request'
+        run: docker load < squidex-tmp.tar.gz
+
+      - name: Rename Tags
+        if: github.event_name != 'pull_request'
+        run: |
+          docker tag squidex-tmp squidex/squidex:dev
+          docker tag squidex-tmp squidex/squidex:dev-${{ env.BUILD_NUMBER }}
+
+      - name: Push Tags
+        if: github.event_name != 'pull_request'
+        run: |
+          docker push squidex/squidex:dev
+          docker push squidex/squidex:dev-${{ env.BUILD_NUMBER }}

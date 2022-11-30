@@ -1,0 +1,40 @@
+<tr (click)="toggle()">
+    <td class="cell-select" sqxStopClick>
+        <input type="checkbox" class="form-check"
+            [disabled]="!selectable"
+            [ngModel]="selected || !selectable"
+            (ngModelChange)="select($event)"
+        />
+    </td>
+
+    <td sqxContentListCell [field]="metaFields.lastModifiedByAvatar">
+        <sqx-content-list-field
+            [content]="content"
+            [field]="metaFields.lastModifiedByAvatar"
+            [language]="language"
+            [languages]="languages"
+            [schema]="schema">
+        </sqx-content-list-field>
+    </td>
+
+    <td *ngFor="let field of schema.defaultReferenceFields">
+        <sqx-content-list-field
+            [content]="content"
+            [field]="field"
+            [language]="language"
+            [languages]="languages"
+            [schema]="schema">
+        </sqx-content-list-field>
+    </td>
+
+    <td sqxContentListCell [field]="metaFields.statusColor">
+        <sqx-content-list-field
+            [content]="content"
+            [field]="metaFields.statusColor"
+            [language]="language"
+            [languages]="languages"
+            [schema]="undefined">
+        </sqx-content-list-field>
+    </td>
+</tr>
+<tr class="spacer"></tr>

@@ -1,0 +1,28 @@
+@import 'mixins';
+@import 'vars';
+
+h3 {
+    @include truncate;
+}
+
+.row {
+    flex-wrap: nowrap;
+}
+
+.col {
+    overflow: hidden;
+}
+
+.team-header {
+    border-bottom: 1px solid $color-border;
+}
+
+.link {
+    font-size: $font-small;
+    font-weight: normal;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

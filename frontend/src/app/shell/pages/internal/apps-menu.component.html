@@ -1,0 +1,104 @@
+<ul class="nav navbar-nav align-items-center flex-nowrap">
+    <li class="nav-item dropdown">
+        <span class="form-select" id="app-name" (click)="appsMenu.toggle()" #button>
+            <ng-container *ngIf="appsState.selectedApp | async; let app; else noApp">
+                {{app.displayName}}
+            </ng-container>
+            
+            <ng-template #noApp>
+                <ng-container *ngIf="teamsState.selectedTeam | async; let team; else noTeam">
+                    {{team.name}}
+                </ng-container>
+
+                <ng-template #noTeam>
+                    {{ 'apps.appsButtonFallbackTitle' | sqxTranslate }}
+                </ng-template>
+            </ng-template>
+        </span>
+
+        <ng-container *sqxModal="appsMenu;closeAlways:true;onRoot:false">
+            <sqx-dropdown-menu [sqxAnchoredTo]="button" [scrollY]="true" position="bottom-left">
+                <ng-container *ngIf="appsState.apps | async; let apps">
+                    <ng-container *ngIf="apps.length > 0">
+                        <a class="dropdown-item dropdown-header" routerLink="/app">
+                            <div class="row g-0 align-items-center">
+                                <div class="col">
+                                    {{ 'apps.allApps' | sqxTranslate }}
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge badge-primary rounded-pill">{{apps.length}}</span>
+                                </div>
+                            </div>
+                        </a>
+                            
+                        <div class="apps-list">
+                            <a class="dropdown-item" *ngFor="let app of apps; trackBy: trackByApp" [routerLink]="['/app', app.name]" routerLinkActive="active">
+                                {{app.displayName}}
+                            </a>
+                        </div>
+                    </ng-container>
+                </ng-container>
+
+                <ng-container *ngIf="teamsState.teams | async; let teams">
+                    <ng-container *ngIf="teams.length > 0">
+                        <div class="dropdown-divider"></div>
+
+                        <a class="dropdown-item dropdown-header" routerLink="/app">
+                            <div class="row g-0 align-items-center">
+                                <div class="col">
+                                    {{ 'apps.allTeams' | sqxTranslate }}
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge badge-primary rounded-pill">{{teams.length}}</span>
+                                </div>
+                            </div>
+                        </a>
+
+                        <div class="teams-list">
+                            <a class="dropdown-item" *ngFor="let team of teams; trackBy: trackByTeam" [routerLink]="['/app/teams', team.id]" routerLinkActive="active">
+                                {{team.name}}
+                            </a>
+                        </div>
+                    </ng-container>
+                </ng-container>
+
+                <ng-container *ngIf="(uiState.settings | async)?.canCreateApps || (uiState.settings | async)?.canCreateApps">
+                    <div class="dropdown-divider"></div>
+
+                    <div class="dropdown-header">
+                        <button type="button" class="btn btn-block btn-success" (click)="addAppDialog.show()">
+                            <i class="icon-plus"></i> {{ 'apps.appsButtonCreate' | sqxTranslate }}
+                        </button>
+                    </div>
+
+                    <div class="dropdown-header" *ngIf="(uiState.settings | async)?.canCreateTeams">
+                        <button type="button" class="btn btn-block btn-sm btn-text-success" (click)="addTeamDialog.show()">
+                            {{ 'apps.appsButtonCreateTeam' | sqxTranslate }}
+                        </button>
+                    </div>
+                </ng-container>
+            </sqx-dropdown-menu>
+        </ng-container>
+    </li>
+
+    <nav aria-label="breadcrumb" *ngIf="appPath | async; let path">
+        <ol class="breadcrumb ms-2" *ngIf="path.length > 0">
+            <li class="breadcrumb-item"></li>
+            <li class="breadcrumb-item" *ngFor="let item of path; trackBy: trackByTitle; let last = last" [class.active]="last">
+                <a [routerLink]="item.route" [relativeTo]="route" [class.disabled]="last">{{item.localized}}</a>
+            </li>
+        </ol>
+    </nav>
+</ul>
+
+<ng-container *sqxModal="addAppDialog">
+    <sqx-app-form
+        (complete)="addAppDialog.hide()">
+    </sqx-app-form>
+</ng-container>
+
+<ng-container *sqxModal="addTeamDialog">
+    <sqx-team-form
+        (complete)="addTeamDialog.hide()">
+    </sqx-team-form>
+</ng-container>

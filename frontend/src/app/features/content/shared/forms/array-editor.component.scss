@@ -1,0 +1,61 @@
+@import 'mixins';
+@import 'vars';
+
+/* stylelint-disable no-descending-specificity */
+
+virtual-scroller {
+    height: 700px;
+
+    .item {
+        padding: .25rem 1rem;
+
+        &.first {
+            padding-top: .75rem;
+        }
+
+        &.last {
+            padding-bottom: .75rem;
+        }
+    }
+}
+
+.static {
+    padding-bottom: .375rem;
+    padding-top: .375rem;
+}
+
+.item {
+    padding: .375rem 1rem;
+}
+
+.array-container {
+    background: $color-border-lighter;
+    margin: 0;
+    margin-bottom: 1rem;
+    overflow-y: hidden;
+
+    &.expanded {
+        @include absolute(3rem, 1.25rem, 2.375rem + 1rem + .75rem, 1.25rem);
+        margin: 0;
+
+        virtual-scroller {
+            @include absolute(0, 0, 0, 0);
+            height: 100%;
+        }
+    }
+}
+
+.array-buttons {
+    &.expanded {
+        @include absolute(null, 1.25rem, .75rem, 1.25rem);
+        max-height: none;
+    }
+}
+
+.drag-container {
+    position: relative;
+}
+
+.cdk-drag-preview {
+    margin: 1rem;
+}

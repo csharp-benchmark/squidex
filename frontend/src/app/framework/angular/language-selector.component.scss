@@ -1,0 +1,45 @@
+@import 'mixins';
+@import 'vars';
+
+.dropdown-menu {
+    max-height: 20rem;
+    min-width: auto;
+    overflow-x: inherit;
+    overflow-y: auto;
+}
+
+.dropdown-item {
+    cursor: pointer;
+
+    td {
+        padding: .25rem 1rem;
+    }
+}
+
+tr {
+    display: inherit !important;
+}
+
+.btn-outline-secondary {
+    color: $color-text;
+}
+
+.missing {
+    &:not(.active) {
+        td {
+            opacity: .6;
+        }
+
+        span {
+            opacity: .6;
+        }
+    }
+}
+
+.text-language {
+    font-weight: bold;
+}
+
+.text-right {
+    text-align: right;
+}

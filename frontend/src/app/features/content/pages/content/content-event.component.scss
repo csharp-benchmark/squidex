@@ -1,0 +1,36 @@
+@import 'mixins';
+@import 'vars';
+
+:host ::ng-deep {
+    .user-ref {
+        @include text-variable;
+    }
+
+    .marker-ref {
+        @include text-variable;
+    }
+}
+
+a {
+    text-decoration: none;
+}
+
+.event {
+    font-size: $font-small;
+    font-weight: normal;
+    margin-bottom: 1.5rem;
+
+    &-created {
+        font-size: $font-small;
+        font-weight: normal;
+        margin: .25rem 0;
+    }
+
+    &-right {
+        overflow: hidden;
+    }
+}
+
+.user-picture {
+    margin-top: .25rem;
+}
