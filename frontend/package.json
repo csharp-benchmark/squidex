@@ -41,7 +41,7 @@
     "date-fns": "2.29.3",
     "font-awesome": "4.7.0",
     "graphiql": "2.0.9",
-    "graphql": "16.6.0",
+    "graphql": "16.8.1",
     "graphql-ws": "^5.11.2",
     "image-focus": "1.2.1",
     "keycharm": "0.4.0",
