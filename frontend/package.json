@@ -55,7 +55,7 @@
     "ngx-virtual-scroller": "^4.0.3",
     "oidc-client": "1.11.5",
     "pikaday": "1.8.2",
-    "progressbar.js": "1.1.0",
+    "progressbar.js": "1.1.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "resize-observer-polyfill": "1.5.1",
