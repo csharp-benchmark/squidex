@@ -67,7 +67,7 @@
     <PackageReference Include="Squidex.Assets.GoogleCloud" Version="5.0.0" />
     <PackageReference Include="Squidex.Assets.FTP" Version="5.0.0" />
     <PackageReference Include="Squidex.Assets.ImageMagick" Version="5.0.0" />
-    <PackageReference Include="Squidex.Assets.ImageSharp" Version="5.0.0" />
+    <PackageReference Include="Squidex.Assets.ImageSharp" Version="5.3.0" />
     <PackageReference Include="Squidex.Assets.Mongo" Version="5.0.0" />
     <PackageReference Include="Squidex.Assets.S3" Version="5.0.0" />
     <PackageReference Include="Squidex.Assets.TusAdapter" Version="5.0.0" />
