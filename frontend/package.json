@@ -19,7 +19,7 @@
     "@angular/animations": "14.2.6",
     "@angular/cdk": "14.2.5",
     "@angular/cdk-experimental": "14.2.5",
-    "@angular/common": "14.2.6",
+    "@angular/common": "19.2.16",
     "@angular/core": "14.2.6",
     "@angular/forms": "14.2.6",
     "@angular/localize": "14.2.6",
